@@ -31,6 +31,8 @@ Critical insight — SAME model for docs AND queries:
   same model to embed everything.
 """
 
+from pydoc import text
+
 import numpy as np
 from typing import Union
 from .chunker import Chunk
@@ -60,6 +62,7 @@ class Embedder:
         if self._model is None:
             print(f"  Loading embedding model '{self.model_name}'...")
             from sentence_transformers import SentenceTransformer
+
             self._model = SentenceTransformer(self.model_name)
             print(f"  Model loaded. Embedding dimension: {self.embedding_dim}")
         return self._model

@@ -59,8 +59,8 @@ class TextChunker:
 
     def __init__(
         self,
-        chunk_size: int = 500,
-        overlap: int = 100,
+        chunk_size: int = 200,
+        overlap: int = 40,
         strategy: str = "sentence",
     ):
         if overlap >= chunk_size:
@@ -122,8 +122,7 @@ class TextChunker:
             )
         return all_chunks
 
-
-    # Splitting strategies                                                  
+    # Splitting strategies
 
     def _fixed_split(self, text: str) -> list[str]:
         """
@@ -159,9 +158,10 @@ class TextChunker:
         because chunks contain complete thoughts.
         """
         import re
+
         # Split on period/exclamation/question followed by whitespace or end
         # This is a simple heuristic; for production use nltk.sent_tokenize
-        sentences = re.split(r'(?<=[.!?])\s+', text)
+        sentences = re.split(r"(?<=[.!?])\s+", text)
         sentences = [s.strip() for s in sentences if s.strip()]
 
         return self._group_into_chunks(sentences)

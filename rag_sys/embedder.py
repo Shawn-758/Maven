@@ -7,16 +7,6 @@ What it does:
   Converts text (chunks or queries) into dense numerical vectors
   (embeddings) that capture semantic meaning.
 
-What is an embedding?
-  An embedding is a list of floating-point numbers (e.g., 384 numbers)
-  that represents the "meaning" of a piece of text. Texts with similar
-  meanings have similar vectors (their vectors point in similar directions
-  in high-dimensional space).
-
-  "The cat sat on the mat"  → [0.12, -0.45, 0.87, ...]
-  "A feline rested on a rug" → [0.11, -0.43, 0.85, ...]  ← very similar!
-  "Quantum computing basics"  → [-0.33, 0.21, -0.54, ...] ← very different!
-
 Why sentence-transformers?
   - Free, open-source, runs locally (no API key needed)
   - High quality: trained on hundreds of millions of sentence pairs

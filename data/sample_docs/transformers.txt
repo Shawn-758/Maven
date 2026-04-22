@@ -1,0 +1,22 @@
+Transformers: The Architecture Behind Modern AI
+
+Transformers are a type of neural network architecture introduced in the paper "Attention is All You Need" by Vaswani et al. in 2017. They have become the dominant architecture for natural language processing tasks.
+
+The core innovation of transformers is the self-attention mechanism. Unlike recurrent neural networks (RNNs) that process tokens sequentially, transformers process all tokens in parallel. For each token, self-attention computes a weighted sum of all other tokens, where the weights indicate how much "attention" that token should pay to each other token.
+
+The attention mechanism works using three learned projections:
+- Query (Q): what the current token is looking for
+- Key (K): what each token is offering
+- Value (V): what each token will actually contribute
+
+The attention score between two tokens is computed as the dot product of Q and K, scaled by the square root of the dimension size, then passed through a softmax function to create a probability distribution.
+
+Transformer models have an encoder-decoder structure for sequence-to-sequence tasks like translation. For language modeling (like GPT), only the decoder is used. For classification (like BERT), only the encoder is used.
+
+Positional encoding is added to the input embeddings to give the model information about token positions, since transformers have no inherent sense of order.
+
+Multi-head attention runs several attention mechanisms in parallel, allowing the model to attend to different types of information simultaneously. The outputs are concatenated and linearly projected.
+
+Feed-forward layers follow each attention layer and process each token independently through two linear transformations with a ReLU activation in between.
+
+Layer normalization and residual connections are used throughout to stabilize training and allow gradients to flow effectively through the deep network.

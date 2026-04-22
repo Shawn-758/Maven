@@ -1,0 +1,49 @@
+Evaluating RAG Systems: Metrics and Methods
+
+Evaluating a Retrieval-Augmented Generation (RAG) system requires assessing two distinct components: the retrieval quality and the generation quality.
+
+
+
+
+Retrieval Evaluation Metrics:
+
+
+Precision@k measures what fraction of the top-k retrieved documents are actually relevant. If you retrieve 5 chunks and 3 are relevant, precision@5 = 0.6.
+
+Recall@k measures what fraction of all relevant documents were retrieved in the top-k. If there are 10 relevant chunks and you retrieved 7 of them, recall@10 = 0.7.
+
+Mean Reciprocal Rank (MRR) rewards systems that put the first relevant document as high as possible in the rankings. It's the average of 1/rank_of_first_relevant_result.
+
+NDCG (Normalized Discounted Cumulative Gain) is a more sophisticated metric that assigns higher credit to relevant documents ranked higher.
+
+
+
+Generation Evaluation Metrics:
+
+
+Faithfulness measures whether the generated answer is factually consistent with the retrieved context. An answer that contradicts its source context has low faithfulness.
+
+Answer Relevance measures whether the answer actually addresses the user's question, even if it's factually correct.
+
+Context Precision measures whether the retrieved chunks are relevant to the question (similar to retrieval precision).
+
+Context Recall measures whether the retrieved chunks contain all the information needed to answer the question.
+
+
+
+Common Failure Modes:
+
+
+Retrieval failures occur when the relevant information exists in the document collection but isn't retrieved. This can happen due to vocabulary mismatch, poor chunking, or insufficient embedding model quality.
+
+Hallucination occurs when the LLM generates information not present in the retrieved context. Strict prompt engineering ("only answer based on the provided context") helps reduce this.
+
+Context window overflow happens when too many chunks are retrieved, exceeding the LLM's context window. This forces truncation and potential loss of relevant information.
+
+
+
+
+Practical Evaluation Approach:
+
+
+Build a golden dataset of 50-100 question-answer pairs with known relevant source passages. Run your RAG system on these questions and compare the retrieved passages and generated answers against the golden data. Track metrics over time as you modify chunking, embedding models, or retrieval strategies.

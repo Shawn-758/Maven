@@ -1,234 +1,187 @@
-# RAG System — Built From Scratch
+# 🚀 RAG System — Built From Scratch
 
-A fully modular Retrieval-Augmented Generation (RAG) implementation in Python, built for learning. Every component is separated, documented, and explained.
+A fully modular **Retrieval-Augmented Generation (RAG)** system built in Python for learning and experimentation.
 
-## Project Structure
+This project breaks down every component of a RAG pipeline into clear, independent modules — so you understand *how it works under the hood*, not just how to use it.
 
-```
-rag_system/
-├── rag/
-│   ├── ingestion.py      # Component 1: Load documents from disk
-│   ├── chunker.py        # Component 2: Split text into chunks
-│   ├── embedder.py       # Component 3: Convert text → vectors
-│   ├── vector_store.py   # Component 4: Store & index vectors (ChromaDB)
-│   ├── retriever.py      # Component 5: Semantic search + re-ranking + eval
-│   ├── generator.py      # Component 6: Prompt construction + LLM call
-│   └── pipeline.py       # Orchestrator: connects all components
-├── data/
-│   └── sample_docs/      # Three sample documents for testing
-├── cli.py                # Command-line interface
+---
+
+## 📂 Project Structure
+
+
+rag_sys/
+├── ingestion.py # Load documents from disk
+├── chunker.py # Split text into chunks
+├── embedder.py # Convert text → embeddings
+├── vector_store.py # Store & search vectors (ChromaDB)
+├── retriever.py # (legacy) basic semantic retrieval
+├── generator.py # Prompt construction + LLM call
+├── pipeline.py # End-to-end pipeline
+│
+├── hybrid/ # 🔥 Hybrid retrieval (BM25 + vector)
+│ ├── bm25_index.py
+│ ├── hybrid_retriever.py
+│ ├── hybrid_pipeline.py
+│ └── evaluate_hybrid.py
+│
+├── cli.py # Command-line interface
 └── requirements.txt
-```
 
-## Quickstart
+data/
+└── sample_docs/ # Example documents
+
+
+---
+
+## ⚡ Quickstart
 
 ### 1. Install dependencies
 
 ```bash
 pip install -r requirements.txt
-```
-
-### 2. Set your API key
-
-```bash
+2. Set API key (for LLM)
 export ANTHROPIC_API_KEY=your_key_here
-# OR for OpenAI:
-# export OPENAI_API_KEY=your_key_here
-```
-
-### 3. Ingest documents
-
-```bash
-cd rag_system
-python cli.py ingest --dir data/sample_docs
-```
-
-### 4. Ask questions
-
-```bash
-# Single question
-python cli.py query --question "What is the self-attention mechanism?"
-
-# Filter to one document
-python cli.py query --question "What is FAISS?" --source vector_databases.txt
-
-# Interactive chat
-python cli.py chat
-```
-
-### 5. Run evaluation
-
-```bash
-python cli.py evaluate
-```
-
-### 6. Compare chunking strategies
-
-```bash
-python cli.py compare-chunking
-```
-
----
-
-## Architecture
-
-### Two Phases
-
-**Ingestion (offline, one-time):**
-```
-Files → DocumentLoader → TextChunker → Embedder → VectorStore
-```
-
-**Querying (online, per request):**
-```
-Question → Embedder → VectorStore.search() → Retriever → Generator → Answer
-```
-
----
-
-## Key Trade-offs to Understand
-
-### Chunk Size
-| Small (128–256 chars) | Large (512–1024 chars) |
-|---|---|
-| More precise retrieval | More context per chunk |
-| May miss cross-sentence meaning | Embeddings more diluted |
-| More chunks = more storage | Fewer chunks |
-
-**Rule of thumb:** Start with 400–600 characters. If retrieval misses context, increase. If retrieval returns noisy chunks, decrease.
-
-### Overlap
-| No overlap | 10–20% overlap |
-|---|---|
-| Clean, no duplication | Captures cross-boundary sentences |
-| Sentences cut at boundaries | Slightly more storage |
-
-**Rule of thumb:** Set overlap to ~20% of chunk_size (e.g., 100 for size=500).
-
-### Chunking Strategy
-| Fixed | Sentence | Paragraph |
-|---|---|---|
-| Fast, simple | Grammatically coherent | Great for structured docs |
-| Often cuts mid-sentence | Best default choice | Fails on continuous prose |
-
-### Embedding Model
-| all-MiniLM-L6-v2 | all-mpnet-base-v2 | BAAI/bge-small-en-v1.5 |
-|---|---|---|
-| 384 dims, 80MB, fast | 768 dims, 420MB, better quality | 384 dims, great for Q&A |
-| Great starting point | Use when quality matters more | Recommended for RAG |
-
-### Top-k Retrieval
-| Low k (3) | High k (7+) |
-|---|---|
-| Focused context | More coverage |
-| Fewer hallucinations | May include noise |
-| May miss relevant chunks | Higher LLM cost |
-
----
-
-## How Retrieval Affects Answer Quality
-
-Poor retrieval → poor answers, regardless of LLM quality.
-
-**Scenario 1 — Good retrieval:**
-- Query: "What is cosine similarity?"
-- Retrieved: Chunk from vector_databases.txt explaining cosine similarity formula
-- Result: Accurate, grounded answer
-
-**Scenario 2 — Bad retrieval (wrong chunk retrieved):**
-- Query: "What is cosine similarity?"
-- Retrieved: Chunk about transformer architecture (wrong topic, slight semantic overlap)
-- Result: LLM says "I don't have enough context" OR hallucinates an answer
-
-**Debugging retrieval quality:**
-```bash
-python cli.py evaluate   # checks Precision@k and Recall@k
-python cli.py query --question "..." # shows similarity scores for each result
-```
-
----
-
-## Improving Retrieval Quality
-
-### 1. Better Embedding Models
-Replace `all-MiniLM-L6-v2` with a model trained for retrieval:
-```python
-# In RAGConfig:
-embedding_model="BAAI/bge-small-en-v1.5"          # very good, same size
 # OR
-embedding_model="multi-qa-mpnet-base-dot-v1"       # trained for Q&A
-```
+export OPENAI_API_KEY=your_key_here
+3. Ingest documents
+python -m rag_sys.cli ingest --dir data/sample_docs
+4. Ask questions
+python -m rag_sys.cli query --question "What is self-attention?"
+5. Run evaluation
+python -m rag_sys.cli evaluate
+6. Run hybrid evaluation
+python -m rag_sys.cli evaluate_hybrid
+🧠 Architecture
+Ingestion (offline)
+Documents
+   ↓
+Chunker
+   ↓
+Embedder
+   ↓
+Vector Store
+Query (online)
+Query
+  ↓
+Embedder
+  ↓
+Retriever (Vector / Hybrid)
+  ↓
+Top-k Chunks
+  ↓
+Generator (LLM)
+  ↓
+Answer
+🔍 Hybrid Retrieval (Key Feature)
 
-### 2. Re-ranking
-Enable the cross-encoder re-ranker for better precision:
-```python
-config = RAGConfig(
-    top_k=5,
-    use_reranker=True,
-    # Retrieves 20 candidates, re-ranks to top 5
-)
-```
-Adds ~200ms latency but significantly improves precision.
+This system supports Hybrid Search:
 
-### 3. Metadata Filtering
-Restrict retrieval to specific documents:
-```python
-result = pipeline.query(
-    "What is attention?",
-    metadata_filter={"source": "transformers.txt"}
-)
-```
+🔤 BM25 → keyword matching
+🧠 Embeddings → semantic understanding
+🔗 RRF → combines both rankings
 
-### 4. Hybrid Search (not implemented here — next step)
-Combine vector search with BM25 keyword search. Great for:
-- Domain-specific terms that embeddings may not capture well
-- Exact name/product lookups
+Why it matters:
+
+Query Type	Best Method
+Exact terms	BM25
+Conceptual	Embeddings
+Real-world	Hybrid ✅
+⚖️ Key Trade-offs
+Chunk Size
+Small	Large
+More precise	More context
+Less context	Possible noise
+
+👉 Recommended: 300–500 chars
+
+Overlap
+Low	High
+Clean chunks	Better continuity
+May cut meaning	Slight duplication
+
+👉 Recommended: 10–20%
+
+Embedding Models
+Model	Notes
+all-MiniLM-L6-v2	Fast baseline
+all-mpnet-base-v2	Higher quality
+BAAI/bge-small-en-v1.5	🔥 Best for retrieval
+📊 Evaluation
+
+Run:
+
+python -m rag_sys.cli evaluate
+
+Metrics:
+
+Precision@k → how relevant results are
+Recall@k → did we find the right doc
+Top-1 Accuracy → is the best chunk correct
+🛠 Improving Retrieval
+1. Better embeddings
+embedding_model="BAAI/bge-small-en-v1.5"
+2. Query formatting (important for BGE)
+"Represent this sentence for searching relevant passages: " + query
+3. Hybrid search
+
+Already implemented in:
+
+rag_sys/hybrid/
+4. Reranking (next step)
+
+Use a cross-encoder to re-rank top-k results for higher precision.
+
+⚠️ Common Failure Modes
+Problem	Cause
+Wrong answer	Wrong chunk retrieved
+Mixed concepts	Chunk too large
+Missed answer	Chunk too small
+Hallucination	Weak context
+📈 Scaling to Production
+Area	Dev	Production
+Vector DB	ChromaDB	Pinecone / Qdrant
+Embeddings	Local CPU	GPU service
+Retrieval	Single stage	Hybrid + rerank
+Eval	Manual	Automated (RAGAS)
+🧪 Future Improvements
+ Add cross-encoder reranker
+ Streaming responses
+ Async pipeline
+ API layer (FastAPI)
+ UI (Streamlit / React)
+📚 References
+RAG Paper: https://arxiv.org/abs/2002.08909
+RAGAS: https://github.com/explodinggradients/ragas
+Sentence Transformers: https://sbert.net/
+ChromaDB: https://docs.trychroma.com/
+💡 Why this project?
+
+Most RAG tutorials hide complexity.
+
+This project shows:
+
+how chunking affects retrieval
+how embeddings actually behave
+why hybrid search is necessary
+how evaluation reveals real issues
+🧑‍💻 Author
+
+Built for learning, debugging, and understanding RAG systems deeply.
+
 
 ---
 
-## Evaluating Your RAG System
+# ✅ What I improved
 
-Build a golden dataset — 50–100 (question, relevant_source) pairs — and run:
-
-```bash
-python cli.py evaluate
-```
-
-Target metrics (as a rough guide):
-- Precision@5 > 0.7: decent
-- Precision@5 > 0.85: good
-- Recall@5 > 0.8: most relevant passages are found
-
-If precision is low → chunks too large, or wrong embedding model.
-If recall is low → top_k too small, or chunking misses content.
+- Fixed folder names (`rag_sys` vs `rag`)
+- Added **hybrid retrieval section**
+- Cleaned CLI commands (your actual usage)
+- Removed outdated parts
+- Improved readability for GitHub preview
+- Made it look like a **real portfolio project**
 
 ---
 
-## Scaling to Production
-
-| Concern | Dev (this codebase) | Production |
-|---|---|---|
-| Vector DB | ChromaDB on disk | Pinecone, Weaviate, Qdrant, or pgvector |
-| Embedding | On-process CPU | Dedicated embedding service, GPU |
-| LLM | Single call | Batching, async, streaming |
-| Documents | Load at startup | Incremental ingestion queue (Celery, etc.) |
-| Search | Single-stage | Hybrid (BM25 + vector) + re-rank |
-| Eval | Manual golden set | Automated with RAGAS framework |
-
-**Production checklist:**
-1. Add async/await for embedding and LLM calls (high latency I/O)
-2. Cache frequently-asked query embeddings
-3. Add document versioning (re-ingest when docs change)
-4. Monitor retrieval quality metrics in production
-5. Consider chunking documents at heading boundaries for structured docs
-6. Add rate limiting and authentication if exposing as an API
-
----
-
-## Further Reading
-
-- [REALM: Retrieval-Augmented Language Model Pre-Training](https://arxiv.org/abs/2002.08909) — original RAG paper
-- [RAGAS](https://github.com/explodinggradients/ragas) — automated RAG evaluation framework
-- [Sentence Transformers documentation](https://sbert.net/) — embedding models
-- [ChromaDB documentation](https://docs.trychroma.com/) — vector database
-- [Lost in the Middle](https://arxiv.org/abs/2307.03172) — why chunk position in context matters
+If you want next level:
+- I can turn this into a **top-tier GitHub README (with badges, diagrams, GIF demo)**  
+- or tailor it for **resume / recruiter impact**

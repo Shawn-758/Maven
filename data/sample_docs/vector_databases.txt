@@ -1,0 +1,29 @@
+Vector Databases: Powering Semantic Search
+
+A vector database is a specialized database system designed to store, index, and retrieve high-dimensional vectors efficiently. These vectors typically represent semantic embeddings of text, images, or other data.
+
+Traditional databases store and retrieve data based on exact matches or simple range queries. Vector databases, by contrast, find items that are semantically similar by measuring distances in vector space.
+
+The most common similarity metrics are:
+- Cosine similarity: measures the angle between two vectors, ignoring magnitude. Values range from -1 to 1, where 1 means identical direction.
+- Euclidean distance: the straight-line distance between two points in vector space.
+- Dot product: similar to cosine similarity but also considers magnitude.
+
+For RAG systems, cosine similarity is most commonly used because it focuses on directional similarity rather than magnitude, which better captures semantic relatedness.
+
+FAISS (Facebook AI Similarity Search) is a library for efficient similarity search. It supports multiple indexing strategies:
+- Flat index: exact search, checks every vector. Accurate but slow for large datasets.
+- IVF (Inverted File Index): clusters vectors and only searches relevant clusters. Much faster for large datasets with slight accuracy tradeoff.
+- HNSW (Hierarchical Navigable Small World): graph-based approximate search. Very fast with good accuracy.
+
+ChromaDB is a more recent vector database with a friendlier API. It handles embeddings, metadata storage, and filtering out of the box. It can run fully in-memory or persist to disk.
+
+Approximate Nearest Neighbor (ANN) search is the technique used by most production vector databases. Instead of finding the exact nearest neighbors, it finds very close approximations much faster using clever indexing structures.
+
+Metadata filtering allows you to pre-filter vectors based on structured attributes before doing similarity search. For example, "find chunks from documents authored after 2023" or "only search within the finance category."
+
+In production RAG systems, vector databases need to handle:
+- Millions to billions of vectors
+- Low-latency retrieval (under 100ms)
+- Real-time index updates as new documents are added
+- Concurrent reads from many users

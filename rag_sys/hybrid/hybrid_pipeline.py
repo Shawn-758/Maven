@@ -19,7 +19,7 @@ from numpy.ma import count
 from ..ingestion import DocumentLoader
 from ..chunker import TextChunker, Chunk
 from ..embedder import Embedder
-from ..vector_store import VectorStore
+from rag_sys.vector_store import VectorStore
 from .hybrid_retriever import HybridRetriever, HybridResult
 from ..generator import NvidiaGenerator, build_prompt, SYSTEM_PROMPT
 
@@ -218,7 +218,7 @@ class HybridRAGPipeline:
             )
 
         # Build context from HybridResults (same interface as SearchResult)
-        from ..vector_store import SearchResult
+        from rag_sys.vector_store import SearchResult
 
         search_results_for_prompt = [
             SearchResult(

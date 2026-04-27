@@ -20,6 +20,8 @@ import argparse
 import sys
 import os
 
+import rag_sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from rag_sys import RAGPipeline, RAGConfig
 
@@ -314,8 +316,8 @@ def cmd_compare_chunking(args):
     This is purely educational — run this to understand how different
     strategies split the same text into different chunk patterns.
     """
-    from rag_sys.chunker import TextChunker, compare_strategies
-    from rag_sys.ingestion import DocumentLoader
+    from .chunker import TextChunker, compare_strategies
+    from .ingestion import DocumentLoader
 
     loader = DocumentLoader()
     sample_path = "data/sample_docs/transformers.txt"

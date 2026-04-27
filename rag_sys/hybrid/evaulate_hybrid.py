@@ -26,7 +26,7 @@ import os
 # Make sure we can import from the rag package
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from rag.hybrid_pipeline import HybridRAGPipeline
+from hybrid_pipeline import HybridRAGPipeline
 
 
 # ── Golden evaluation set ──────────────────────────────────────────────── #
@@ -114,8 +114,8 @@ def run_evaluation():
 
     # Build the pipeline
     pipeline = HybridRAGPipeline(
-        chunk_size=300,
-        chunk_overlap=60,
+        chunk_size=400,
+        chunk_overlap=80,
         chunk_strategy="sentence",
         bm25_fetch_k=15,
         vector_fetch_k=15,

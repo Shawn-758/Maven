@@ -22,6 +22,18 @@ rag_system/
 
 ## Quickstart
 
+### Prerequisites
+
+- Python 3.11 or 3.12 is recommended. The current 3.14 venv may force source builds for some packages.
+- On Linux, install a C++ toolchain before running `pip install -r requirements.txt`.
+    - Debian/Ubuntu: `sudo apt-get install build-essential`
+    - Fedora/RHEL: `sudo dnf install gcc-c++ make`
+- Also install the Python development headers package so native extensions can find `Python.h`.
+    - Debian/Ubuntu: `sudo apt-get install python3-dev`
+    - Fedora/RHEL: `sudo dnf install python3-devel` or `sudo dnf install python3.14-devel`
+
+If you stay on Python 3.14, packages with native extensions may need to compile locally and can fail if the compiler toolchain is missing.
+
 ### 1. Install dependencies
 
 ```bash

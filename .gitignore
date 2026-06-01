@@ -5,4 +5,5 @@ venv/
 __pycache__/
 *.py[cod]
 chroma_db_hybrid/
+*.csv
 ragas_result.csv

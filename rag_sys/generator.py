@@ -48,12 +48,16 @@ SYSTEM_PROMPT = """You are a precise question-answering assistant.
 
 Your job:
 - Answer questions ONLY using the provided context passages.
+- Answer the question directly in the first sentence.
 - Give a COMPLETE answer — synthesize ALL relevant passages, not just the first one.
 - Structure your answer clearly, using the full detail available in the context.
 - Cite which passage(s) you used by referencing [Passage N].
 - If multiple passages cover different aspects of the question, cover each aspect.
 - If the answer is not found in the context, say so. Do NOT use general knowledge.
+- Use the key nouns and terminology from the question in your response when they are relevant.
+- If the question asks for a comparison or "when should I use X over Y", answer both parts explicitly.
 - Be thorough but concise. Avoid padding."""
+
 
 def build_prompt(query: str, search_results: list[SearchResult]) -> str:
     """
@@ -92,6 +96,7 @@ def build_prompt(query: str, search_results: list[SearchResult]) -> str:
 # LLM clients                                                           #
 # ------------------------------------------------------------------ #
 
+
 class AnthropicGenerator:
     """
     Uses Anthropic's Claude API to generate answers.
@@ -100,7 +105,9 @@ class AnthropicGenerator:
     API key:  set ANTHROPIC_API_KEY environment variable
     """
 
-    def __init__(self, model: str = "claude-haiku-4-5-20251001", max_tokens: int = 1024):
+    def __init__(
+        self, model: str = "claude-haiku-4-5-20251001", max_tokens: int = 1024
+    ):
         self.model = model
         self.max_tokens = max_tokens
         self._client = None
@@ -109,6 +116,7 @@ class AnthropicGenerator:
     def client(self):
         if self._client is None:
             import anthropic
+
             self._client = anthropic.Anthropic()
         return self._client
 
@@ -141,6 +149,7 @@ class OpenAIGenerator:
     def client(self):
         if self._client is None:
             import openai
+
             self._client = openai.OpenAI()
         return self._client
 
@@ -187,15 +196,16 @@ class OllamaGenerator:
         )
         response.raise_for_status()
         return response.json()["response"]
-    
+
+
 class NvidiaGenerator:
     """
     Uses NVIDIA's free hosted models via their OpenAI-compatible API.
     No cost for low usage. Requires: pip install openai
-    
+
     Good free models available on build.nvidia.com:
       meta/llama-3.1-8b-instruct     - fast, good quality
-      meta/llama-3.1-70b-instruct    - slower, better quality  
+      meta/llama-3.1-70b-instruct    - slower, better quality
       mistralai/mistral-7b-instruct  - very fast
       microsoft/phi-3-mini-128k      - small but capable
     """
@@ -213,6 +223,7 @@ class NvidiaGenerator:
     def client(self):
         if self._client is None:
             import openai, os
+
             self._client = openai.OpenAI(
                 base_url="https://integrate.api.nvidia.com/v1",
                 api_key=os.environ["NVIDIA_API_KEY"],

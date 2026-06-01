@@ -131,6 +131,7 @@ class VectorStore:
         query_embedding,
         k: int = 5,
         where: Optional[dict] = None,
+        similarity_threshold: float = 0.0,
     ) -> list[SearchResult]:
         """
         Find the k most semantically similar chunks to the query vector.
@@ -148,10 +149,17 @@ class VectorStore:
             Example: {"file_type": {"$in": ["txt", "pdf"]}}
             This is what makes metadata filtering possible — you can
             narrow the search space before doing similarity comparison.
+        similarity_threshold : float
+            Minimum cosine similarity [0, 1] a chunk must have to be
+            included in the results. Defaults to 0.0 (disabled — return all k).
+            When using hybrid search (BM25 + vector + RRF), keep this at 0.0
+            so the full candidate pool is available for RRF fusion.
+            Apply post-RRF filtering in the retriever layer instead.
 
         Returns
         -------
         List of SearchResult, ordered by similarity descending.
+        Only results with similarity >= similarity_threshold are returned.
         """
         if self._collection.count() == 0:
             print("WARNING: Vector store is empty. Run ingestion first.")
@@ -171,7 +179,7 @@ class VectorStore:
         results = self._collection.query(**query_params)
 
         # ChromaDB returns distances (lower = more similar for cosine space).
-        # We convert: similarity = 1 - distance
+        # We convert: similarity = 1 - distance, then apply threshold filter.
         search_results = []
         for rank, (doc, meta, dist, rid) in enumerate(
             zip(
@@ -182,11 +190,15 @@ class VectorStore:
             ),
             start=1,
         ):
+            similarity = round(1.0 - dist, 4)
+            if similarity < similarity_threshold:
+                # Skip low-quality matches — they hurt context_precision
+                continue
             search_results.append(
                 SearchResult(
                     chunk_id=rid,
                     text=doc,
-                    score=round(1.0 - dist, 4),  # convert distance to similarity
+                    score=similarity,
                     metadata=meta,
                     rank=rank,
                 )

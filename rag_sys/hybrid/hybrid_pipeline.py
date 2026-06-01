@@ -52,8 +52,9 @@ class HybridRAGPipeline:
         rrf_k: int = 60,
         bm25_weight: float = 1.0,
         vector_weight: float = 1.0,
+        vector_similarity_threshold: float = 0.30,  # post-RRF noise filter
         # Generation
-        llm_model: str = "claude-haiku-4-5-20251001",
+        llm_model: str = "meta/llama-3.1-70b-instruct",
         max_tokens: int = 1024,
     ):
         print("Initializing Hybrid RAG Pipeline...")
@@ -80,9 +81,10 @@ class HybridRAGPipeline:
             rrf_k=rrf_k,
             bm25_weight=bm25_weight,
             vector_weight=vector_weight,
+            vector_similarity_threshold=vector_similarity_threshold,
         )
         self.generator = NvidiaGenerator(
-            model="meta/llama-3.1-8b-instruct", max_tokens=max_tokens
+            model=llm_model, max_tokens=max_tokens
         )
         print("Pipeline ready.\n")
         self._restore_bm25_from_store()

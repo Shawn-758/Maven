@@ -49,7 +49,7 @@ def get_pipeline():
         embedding_model="BAAI/bge-small-en-v1.5",
         bm25_fetch_k=15,
         vector_fetch_k=15,
-        final_k=3,
+        final_k=3,   # restored: threshold filter removes noise; k=3 needed for recall coverage
         rrf_k=60,
     )
 

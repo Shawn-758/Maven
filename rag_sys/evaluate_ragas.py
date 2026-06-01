@@ -36,30 +36,38 @@ EVAL_QUESTIONS = [
     {
         "question": "What is the self-attention mechanism in transformers?",
         "reference_answer": (
-            "Self-attention computes a weighted sum of all tokens, using "
-            "Query, Key and Value projections to determine attention weights."
+            "Self-attention computes a weighted sum of all other tokens, where the weights "
+            "indicate how much attention that token should pay to each other token. "
+            "It works using three learned projections: Query (Q), Key (K), and Value (V). "
+            "The attention score is computed as the dot product of Q and K, scaled by the "
+            "square root of the dimension size, then passed through a softmax function."
         ),
     },
     {
         "question": "How does cosine similarity work for vector search?",
         "reference_answer": (
-            "Cosine similarity measures the angle between two vectors, "
-            "ranging from -1 to 1, where 1 means identical direction."
+            "Cosine similarity measures the angle between two vectors, ignoring magnitude. "
+            "Values range from -1 to 1, where 1 means identical direction. "
+            "It is most commonly used in RAG systems because it focuses on directional "
+            "similarity rather than magnitude, which better captures semantic relatedness."
         ),
     },
     {
         "question": "What is FAISS and when should I use it over ChromaDB?",
         "reference_answer": (
-            "FAISS is Facebook's similarity search library, best for datasets "
-            "over 10 million vectors. ChromaDB is easier with built-in metadata "
-            "filtering, better for small to mid-scale use."
+            "FAISS (Facebook AI Similarity Search) is a library for efficient similarity search "
+            "that supports multiple indexing strategies including flat index, IVF, and HNSW. "
+            "ChromaDB is a more recent vector database with a friendlier API that handles "
+            "embeddings, metadata storage, and filtering out of the box, and can run "
+            "fully in-memory or persist to disk."
         ),
     },
     {
         "question": "What is faithfulness in RAG evaluation?",
         "reference_answer": (
-            "Faithfulness measures whether the generated answer is factually "
-            "consistent with the retrieved context, detecting hallucination."
+            "Faithfulness measures whether the generated answer is factually consistent "
+            "with the retrieved context. An answer that contradicts its source context "
+            "has low faithfulness."
         ),
     },
 ]
@@ -118,10 +126,12 @@ def run_ragas_evaluation():
         chunk_overlap=60,
         chunk_strategy="paragraph",
         embedding_model="BAAI/bge-small-en-v1.5",
-        bm25_fetch_k=15,
-        vector_fetch_k=15,
-        final_k=3,
+        bm25_fetch_k=20,
+        vector_fetch_k=20,
+        final_k=7,  # widen recall coverage for evaluation while keeping RRF fusion in play
         rrf_k=60,
+        llm_model="meta/llama-3.1-8b-instruct",
+        max_tokens=768,
     )
 
     # Build the dataset by running all questions
@@ -141,9 +151,10 @@ def run_ragas_evaluation():
 
     judge_llm = LangchainLLMWrapper(
         ChatNVIDIA(
-            model="meta/llama-3.1-8b-instruct",
+            # model="meta/llama-3.1-8b-instruct",
+            model="meta/llama-3.1-70b-instruct",
             api_key=nvidia_key,
-            max_tokens=512,
+            max_tokens=1024,
             temperature=0,
         )
     )

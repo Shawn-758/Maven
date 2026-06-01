@@ -242,3 +242,4 @@ class RAGPipeline:
             "embedding_model": self.config.embedding_model,
             "chunk_strategy": self.config.chunk_strategy,
         }
+            

@@ -93,6 +93,7 @@ class HybridRetriever:
         rrf_k: int = 60,
         bm25_weight: float = 1.0,
         vector_weight: float = 1.0,
+        vector_similarity_threshold: float = 0.30,
     ):
         """
         Parameters
@@ -118,6 +119,12 @@ class HybridRetriever:
             Use <1 to downweight it (e.g. for queries that are always conceptual).
         vector_weight : float
             Same for the vector lane. Default: both weighted equally.
+        vector_similarity_threshold : float
+            Post-RRF filter: any final result whose *vector* cosine similarity
+            is below this threshold AND whose BM25 score is also zero is dropped.
+            Applied AFTER fusion so RRF can still promote BM25-only good chunks.
+            Default 0.30 — lower than 0.35 to avoid cutting borderline-relevant chunks.
+            Set to 0.0 to disable.
         """
         self.embedder = embedder
         self.vector_store = vector_store
@@ -127,6 +134,7 @@ class HybridRetriever:
         self.rrf_k = rrf_k
         self.bm25_weight = bm25_weight
         self.vector_weight = vector_weight
+        self.vector_similarity_threshold = vector_similarity_threshold
         self.bm25_index: Optional[BM25Index] = None
 
     def build_bm25_index(self, chunks: list[Chunk]) -> None:
@@ -253,11 +261,27 @@ class HybridRetriever:
                     chunk_id=cid,
                 )
 
-        # Sort all candidates by RRF score and take top k
-        sorted_ids = sorted(scores, key=lambda x: scores[x], reverse=True)[:k]
+        # Sort all candidates by RRF score and take top k,
+        # then apply post-RRF similarity threshold to drop pure-noise results.
+        # sorted_ids = sorted(scores, key=lambda x: scores[x], reverse=True)[:k]
+        sorted_ids = sorted(scores, key=lambda x: scores[x], reverse=True)
 
         merged = []
-        for final_rank, cid in enumerate(sorted_ids, start=1):
+        for cid in sorted_ids:
+            if len(merged) >= k:
+                break
+            # Post-RRF noise filter: drop chunks that have a meaningfully low
+            # vector similarity AND no BM25 signal at all (pure noise).
+            vec_sim = vector_scores.get(cid, 0.0)
+            has_bm25 = cid in bm25_ranks
+            if (
+                not has_bm25
+                and self.vector_similarity_threshold > 0.0
+                and vec_sim < self.vector_similarity_threshold
+            ):
+                continue  # skip — vector-only result below quality bar
+
+            final_rank = len(merged) + 1
             chunk = chunk_objects[cid]
             merged.append(
                 HybridResult(
@@ -265,7 +289,7 @@ class HybridRetriever:
                     text=texts[cid],
                     rrf_score=round(scores[cid], 6),
                     bm25_score=round(bm25_scores.get(cid, 0.0), 4),
-                    vector_score=round(vector_scores.get(cid, 0.0), 4),
+                    vector_score=round(vec_sim, 4),
                     bm25_rank=bm25_ranks.get(cid),
                     vector_rank=vector_ranks.get(cid),
                     final_rank=final_rank,

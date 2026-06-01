@@ -4,3 +4,5 @@ venv/
 # Python cache and bytecode
 __pycache__/
 *.py[cod]
+chroma_db_hybrid/
+ragas_result.csv

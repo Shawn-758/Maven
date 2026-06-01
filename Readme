@@ -2,6 +2,7 @@
 
 A fully modular Retrieval-Augmented Generation (RAG) implementation in Python, built for learning. Every component is separated, documented, and explained.
 
+A production-grade Retrieval-Augmented Generation (RAG) system built from scratch in Python. Implements the full pipeline — document ingestion, text chunking, dense embedding, vector storage, hybrid BM25 + semantic retrieval with Reciprocal Rank Fusion, and grounded LLM generation — without relying on high-level frameworks like LangChain. Evaluated using both a custom golden dataset (Top-1 chunk accuracy, Precision@k, Recall@k) and the RAGAS framework (faithfulness, answer relevancy, context precision, context recall). Achieves 100% Top-1 retrieval accuracy and RAGAS faithfulness of 1.0.
 ## Project Structure
 
 ```

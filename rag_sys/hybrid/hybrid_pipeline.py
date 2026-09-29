@@ -142,11 +142,11 @@ class HybridRAGPipeline:
         """Rebuilds the BM25 index from chunks already stored in ChromaDB.Called automatically on startup so queries work without re-ingesting."""
         count = self.vector_store.count()
         if count == 0:
-            return  # Nothing stored yet, skip
+            return 
 
         print(f"  Restoring BM25 index from {count} existing chunks in vector store...")
 
-        # Pull all stored documents and metadata from ChromaDB
+        # pulled stored documents and metadata from ChromaDB
         raw = self.vector_store._collection.get(
             include=["documents", "metadatas", "embeddings"]
         )
@@ -247,8 +247,7 @@ class HybridRAGPipeline:
         Run BM25-only, vector-only, and hybrid retrieval on the same question
         and print a side-by-side comparison.
 
-        This is the most instructive thing you can do to understand why
-        hybrid search matters. Look for chunks that appear in hybrid but
+        Look for chunks that appear in hybrid but
         not in either individual list — that's RRF at work.
         """
         print(f"\n{'='*70}")

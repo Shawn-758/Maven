@@ -3,14 +3,13 @@ rag/bm25_index.py
 -----------------
 HYBRID COMPONENT A: BM25 Keyword Retrieval
 
-What is BM25?
   BM25 (Best Match 25) is the industry-standard keyword retrieval algorithm.
   It is what powers Elasticsearch, Solr, and Lucene under the hood.
   "25" refers to the 25th iteration of the BM family of ranking functions.
 
   It's an improved version of TF-IDF (Term Frequency–Inverse Document Frequency).
 
-How BM25 scores a document for a query:
+BM25 score a document for a query:
   For each query term t in document d:
 
       score(t, d) = IDF(t) × [ tf(t,d) × (k1 + 1) ]
@@ -34,7 +33,6 @@ How BM25 scores a document for a query:
     - Length normalization: a term in a short focused chunk scores higher
       than the same term buried in a long document
 
-Why BM25 + vector search complement each other:
   BM25 is great at:   exact terms, proper nouns, product names, version numbers
   Vector is great at: paraphrases, synonyms, conceptual queries
   Their failure modes don't overlap — so combining them is almost always better
@@ -58,7 +56,7 @@ def tokenize(text: str) -> list[str]:
     Simple whitespace + punctuation tokenizer.
 
     For production, use a proper stemmer/lemmatizer (e.g. nltk's PorterStemmer)
-    so "running" and "run" match the same token. Here we keep it simple.
+    so "running" and "run" match the same token. Simple for now
 
     Trade-off:
       Simple tokenizer → fast, no dependencies, misses morphological variants

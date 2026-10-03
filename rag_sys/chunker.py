@@ -1,8 +1,5 @@
 """
-Text Chunking
-
-What it does:
-  Splits a long Document into smaller Chunk objects that fit within the
+  Split a long Document into smaller Chunk objects that fit within the
   embedding model's context window and are semantically coherent.
 """
 
@@ -14,8 +11,7 @@ from .ingestion import Document
 @dataclass
 class Chunk:
     """
-    A sub-section of a Document, ready to be embedded and stored.
-
+   composition:
     text       : the actual chunk text
     metadata   : inherited from parent Document + chunk-specific fields
     chunk_id   : unique id (used as the vector DB record ID)
@@ -36,15 +32,12 @@ class Chunk:
 
 class TextChunker:
     """
-    Splits Documents into Chunks using configurable strategies.
+    Splits Documents into Chunks
 
     Parameters
     ----------
     chunk_size : int
-        Target size of each chunk in CHARACTERS (not tokens).
-        Why characters and not tokens? Tokens are model-specific; characters
-        are universal. A rough rule: 1 token ≈ 4 characters in English.
-        Default 500 chars ≈ ~125 tokens, well within the 512-token limit.
+        Target size of each chunk in CHARACTERS.
 
     overlap : int
         How many characters each chunk shares with the next.
@@ -217,7 +210,7 @@ class TextChunker:
 
 
 
-# Chunking strategy comparison (useful for learning/experimentation)  
+# Chunking strategy comparison (useful for experimentation)  
 
 
 def compare_strategies(text: str, chunk_size: int = 500, overlap: int = 100):
